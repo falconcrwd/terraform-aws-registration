@@ -62,7 +62,7 @@ resource "crowdstrike_cloud_aws_account" "this" {
 
 # management account uses the SSO profile directly instead of assuming a role
 module "fcs_management_account" {
-  source                        = "../../modules/aws-profile/"
+  source                        = "github.com/CrowdStrike/terraform-aws-cloud-registration//modules/aws-profile?ref=v0.7.13"
   aws_profile                   = var.aws_profile
   falcon_client_id              = var.falcon_client_id
   falcon_client_secret          = var.falcon_client_secret
@@ -98,7 +98,7 @@ module "fcs_management_account" {
 # agentless scanning host account: deploys the scanner VPCs, NAT gateways and scanners
 # do not set agentless_scanning_host_* here, which is what makes this account the host
 module "fcs_scanner_host_account" {
-  source                        = "../../modules/aws-role/"
+  source                        = "github.com/CrowdStrike/terraform-aws-cloud-registration//modules/aws-role?ref=v0.7.13"
   aws_role_name                 = var.aws_role_name
   falcon_client_id              = var.falcon_client_id
   falcon_client_secret          = var.falcon_client_secret
@@ -135,7 +135,7 @@ module "fcs_scanner_host_account" {
 # - keep both agentless_scanning_host_* lines so the account is scanned from the scanner host account
 # - add the account to `onboarded_accounts` in outputs.tf
 module "fcs_child_account_1" {
-  source                        = "../../modules/aws-role/"
+  source                        = "github.com/CrowdStrike/terraform-aws-cloud-registration//modules/aws-role?ref=v0.7.13"
   aws_role_name                 = var.aws_role_name
   falcon_client_id              = var.falcon_client_id
   falcon_client_secret          = var.falcon_client_secret

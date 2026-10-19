@@ -5,9 +5,9 @@ without using the registration wizard in the Falcon console. It onboards three a
 
 | Account | Module | How Terraform authenticates | Role in this example |
 |---|---|---|---|
-| Management account (`TF_VAR_account_id`) | `fcs_management_account` (`modules/aws-profile`) | Directly with an AWS CLI / SSO profile | Org registration in Falcon, scan target |
-| Scanner host account (`local.scanner_host_account_id`) | `fcs_scanner_host_account` (`modules/aws-role`) | Assumes `aws_role_name` (e.g. `OrganizationAccountAccessRole`) | Hosts the agentless scanning infrastructure for the whole org |
-| Child account (`local.child_account_id`) | `fcs_child_account_1` (`modules/aws-role`) | Assumes `aws_role_name` | Scan target |
+| Management account (`TF_VAR_account_id`) | `fcs_management_account` ([`modules/aws-profile`](https://github.com/CrowdStrike/terraform-aws-cloud-registration/tree/v0.7.13/modules/aws-profile)) | Directly with an AWS CLI / SSO profile | Org registration in Falcon, scan target |
+| Scanner host account (`local.scanner_host_account_id`) | `fcs_scanner_host_account` ([`modules/aws-role`](https://github.com/CrowdStrike/terraform-aws-cloud-registration/tree/v0.7.13/modules/aws-role)) | Assumes `aws_role_name` (e.g. `OrganizationAccountAccessRole`) | Hosts the agentless scanning infrastructure for the whole org |
+| Child account (`local.child_account_id`) | `fcs_child_account_1` ([`modules/aws-role`](https://github.com/CrowdStrike/terraform-aws-cloud-registration/tree/v0.7.13/modules/aws-role)) | Assumes `aws_role_name` | Scan target |
 
 - The management account uses an SSO profile directly, so you do **not** need a role to assume in the management account.
   `OrganizationAccountAccessRole` only exists in member accounts that AWS Organizations created, never in the management account itself.
@@ -104,7 +104,7 @@ role when scans run, and manages how long they run.
 
 1. [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) and
    [Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli) >= 1.5 installed
-2. CrowdStrike API client ID and secret with the Cloud Security registration scopes (see [Pre-requisites](../../README.md#pre-requisites))
+2. CrowdStrike API client ID and secret with the Cloud Security registration scopes (see [Pre-requisites](https://github.com/CrowdStrike/terraform-aws-cloud-registration/blob/v0.7.13/README.md#pre-requisites))
 3. An AWS Organization with:
     - an AWS CLI / SSO profile for the management account
     - a role in each member account (scanner host and children) that the management credentials can assume.
@@ -176,7 +176,7 @@ accounts with a module block get the CrowdStrike roles and EventBridge rules.
 
 ```hcl
 module "fcs_child_account_2" {
-  source        = "../../modules/aws-role/"
+  source        = "github.com/CrowdStrike/terraform-aws-cloud-registration//modules/aws-role?ref=v0.7.13"
   aws_role_name = var.aws_role_name
   account_id    = local.child_account_2_id
   # ... every other argument identical to fcs_child_account_1 ...
@@ -204,7 +204,10 @@ Notes:
 - `agentless_scanning_host_role_name` references the host module's output. That makes Terraform finish the scanner host
   before any target account, which CrowdStrike requires.
 - The new account is scanned only in `agentless_scanning_regions`. Data in other regions is not scanned.
-- Each module configures about 30 regional AWS providers, so every extra account makes `plan` and `apply` noticeably slower.
+- Each `aws-role`/`aws-profile` module declares about 30 regional AWS providers (one per supported region, including GovCloud),
+  and instantiates a real-time visibility module in every region enabled in the account, regardless of `agentless_scanning_regions`
+  or `realtime_visibility_regions`. Every extra AWS account therefore adds about 30 provider setups and per-region data-source reads,
+  which makes `plan` and `apply` noticeably slower.
 
 ## Things to Avoid
 
