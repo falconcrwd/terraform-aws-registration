@@ -1,0 +1,78 @@
+variable "falcon_client_id" {
+  type        = string
+  sensitive   = true
+  description = "Falcon API Client ID"
+}
+
+variable "falcon_client_secret" {
+  type        = string
+  sensitive   = true
+  description = "Falcon API Client Secret"
+}
+
+variable "account_id" {
+  type        = string
+  default     = ""
+  description = "The AWS 12 digit account ID"
+  validation {
+    condition     = length(var.account_id) == 0 || can(regex("^[0-9]{12}$", var.account_id))
+    error_message = "account_id must be either empty or the 12-digit AWS account ID"
+  }
+}
+
+variable "organization_id" {
+  type        = string
+  description = "The AWS Organization ID. Leave blank when onboarding single account"
+}
+
+variable "aws_role_name" {
+  type        = string
+  description = "The AWS role name used for assuming into child accounts"
+}
+
+variable "aws_profile" {
+  type        = string
+  description = "The AWS profile used for the management account"
+}
+
+variable "agentless_scanning_create_nat_gateway" {
+  description = "Set to true to create a NAT Gateway for agentless scanning environments"
+  type        = bool
+  default     = true
+}
+
+variable "dspm_s3_access" {
+  description = "Apply permissions for DSPM S3 bucket scanning"
+  type        = bool
+  default     = true
+}
+
+variable "dspm_dynamodb_access" {
+  description = "Apply permissions for DSPM DynamoDB table scanning"
+  type        = bool
+  default     = true
+}
+
+variable "dspm_rds_access" {
+  description = "Apply permissions for DSPM RDS instance scanning"
+  type        = bool
+  default     = true
+}
+
+variable "dspm_redshift_access" {
+  description = "Apply permissions for DSPM Redshift cluster scanning"
+  type        = bool
+  default     = true
+}
+
+variable "dspm_ebs_access" {
+  description = "Apply permissions for DSPM VM scanning"
+  type        = bool
+  default     = true
+}
+
+variable "vpc_cidr_block" {
+  description = "VPC CIDR block"
+  type        = string
+  default     = "10.0.0.0/16"
+}
